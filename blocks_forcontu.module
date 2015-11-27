@@ -14,15 +14,31 @@ function blocks_forcontu_block_info() {
     'info' => t('Unpublished nodes'),
     'cache' => DRUPAL_NO_CACHE,
   );
+
   //Users list
   $blocks['users_list'] = array(
     'info' => t('Users list'),
     'cache' => DRUPAL_NO_CACHE,
   );
+
+  //Obtenemos el nombre del tema activo
+  $default_theme = variable_get('theme_default', 'bartik');
+  //obtenemos listado de las regiones del tema
+  $regions = system_region_list($default_theme, REGIONS_VISIBLE);
+  //Si no tiene la región "sicebar_second" activamos el bloque en la región por defecto
+  if ($regions['sidebar_second']) {
+    $region = 'sidebar_second';
+  } else {
+    $region = system_default_region($default_theme);
+  }
   //Published nodes
   $blocks['published_nodes'] = array(
     'info' => t('Published nodes'),
     'cache' => DRUPAL_NO_CACHE,
+    'status' => 1,
+    'region' => $region,
+    'visibility' => BLOCK_VISIBILITY_LISTED,
+    'pages' => '<front>',
   );
 
   return $blocks;

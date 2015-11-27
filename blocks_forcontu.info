@@ -2,4 +2,5 @@ name = "Blocks Forcontu"
 description =  "Implementation of blocks"
 core = 7.x
 files[] = blocks_forcontu.module
+files[] = blocks_forcontu.install
 package = My modules
