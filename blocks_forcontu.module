@@ -19,6 +19,11 @@ function blocks_forcontu_block_info() {
     'info' => t('Users list'),
     'cache' => DRUPAL_NO_CACHE,
   );
+  //Published nodes
+  $blocks['published_nodes'] = array(
+    'info' => t('Published nodes'),
+    'cache' => DRUPAL_NO_CACHE,
+  );
 
   return $blocks;
 }
@@ -50,6 +55,20 @@ $form = array();
         '#default_value' => variable_get('blocks_forcontu_active_users', 0),
       );
       break;
+    case 'published_nodes':
+      $form['num_nodes_published'] = array(
+        '#type' => 'select',
+        '#title' => t('Select the number of nodes to display in this block.'),
+        '#default_value' => variable_get('blocks_forcontu_num_nodes_published', 3),
+        '#options' => array(1 => 1, 2 => 2, 3 => 3, 4 => 4, 5 => 5),
+      );
+      $form['node_types_published'] = array(
+        '#type' => 'select',
+        '#title' => t('Select a content type.'),
+        '#default_value' => variable_get('blocks_forcontu_node_types_published', 'article'),
+        '#options' => node_type_get_names(), //Cargamos los nombres de los tipos de nodo
+      );
+      break;
   }
   return $form;
 }
@@ -65,6 +84,10 @@ function blocks_forcontu_block_save($delta = '', $edit = array()) {
     case 'users_list':
       variable_set('blocks_forcontu_num_users', $edit['num_users']);
       variable_set('blocks_forcontu_active_users', $edit['active_users']);
+      break;
+    case 'published_nodes':
+      variable_set('blocks_forcontu_num_nodes_published', $edit['num_nodes_published']);
+      variable_set('blocks_forcontu_node_types_published',$edit['node_types_published']);
       break;
   }
 }
@@ -103,6 +126,20 @@ function blocks_forcontu_block_view($delta = '') {
       $variables['title'] = NULL;
       $block['subject'] = t('Users list');
       $block['content'] = theme_user_list($variables);
+      break;
+
+    case 'published_nodes':
+      $result = db_select('node', 'n')
+        ->fields('n', array('nid', 'title', 'created'))
+        ->condition('status', 1)
+        ->condition('type', variable_get('blocks_forcontu_node_types_published', 'article'))
+        ->orderBy('created', 'DESC')
+        ->range(0, variable_get('blocks_forcontu_num_nodes_published', 3))
+        ->execute();
+      if ($node_title_list = node_title_list($result)) {
+        $block['subject'] = t('Published nodes');
+        $block['content'] = $node_title_list;
+      }
       break;
   }
   return $block;
